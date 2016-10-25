@@ -127,5 +127,5 @@ if __name__ == '__main__':
         selectUpTime(args.IP)
 
     if args.setup == "setup":
-        #downloadFiles()
+        downloadFiles()
         sqliteImport()
