@@ -17,6 +17,7 @@ Librarys for python3:
 
 First use : 
  python3 anayze.py -s setup
+ Note that importing all the files takes about 10 minutes
 
 To analyze an IP and check if it is/was an exit node on the TOR network :
  python3 anayze.py -i IP
