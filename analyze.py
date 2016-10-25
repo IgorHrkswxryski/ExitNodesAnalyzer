@@ -10,7 +10,7 @@ import datetime
 from bs4 import BeautifulSoup
 
 def getURL(page):
-    """ Get all URL of a webpage """
+    """ Get all HREF of a webpage """
 
     HTMLPage = page
     start_link = HTMLPage.find("a href")
@@ -43,8 +43,11 @@ def sqliteImport():
         for x in files:
             if bool(re.search(r"(\d+-\d+-\d+-\d+-\d+-\d+)", x)):
                 with open(os.path.join(root, x), 'r') as fin:
+                    # Reading file
                     data = fin.readlines()
+                    # Converting into CSV
                     reader = csv.reader(data , delimiter=' ')
+                    # Inserting IP and associated date to database
                     for row in reader:
                         if row[0] == 'ExitAddress':
                             ExitAddress = row[1]
@@ -60,25 +63,28 @@ def selectUpTime(IP):
 
     ip = IP
     connected = []
-    notConnected = []
     conn = sqlite3.connect('exitNodes.db')
     curs = conn.cursor()
+    # Select distinct date and IP
     curs.execute("SELECT DISTINCT * FROM nodes WHERE ExitAddress=(?)", (ip, ))
     rows = curs.fetchall()
     for index, row in enumerate(rows, start=0):
+        # Converting date
         date0 = datetime.datetime.strptime(rows[index-1][1], '%Y-%m-%d').date()
         date1 = datetime.datetime.strptime(rows[index][1], '%Y-%m-%d').date()
+        # First appear for the IP on TOR
         if index == 0:
             print("First Up Time : "+row[1])
             connected.append(row[1])
         else:
+            # If difference betwee two dates == 1, node is UP
             if date1 == (date0 + datetime.timedelta(days=+1)):
                 connected.append(date1)
+            # If not, node has been disconnected
             else:
                 print("Up : ",connected[0], " -> ", connected[len(connected)-1])
-                #print("Down : ",date0, " -> ", date1)
-                notConnected.append(date1)
                 connected = []
+        # Lasr appear for the IP on TOR
         if index == len(rows)-1:
             print("Up : ",connected[0], " -> ", connected[len(connected)-1])
             print("Last Up Time : "+row[1])
@@ -101,10 +107,13 @@ def downloadFiles():
             if ("exit" in archive) and not (os.path.exists(archive)):
                 print("Downloading file : "+site+archive)
                 responseARCHIVE = requests.get(site+archive)
+                # Writing archives
                 with open(archive, "wb") as code:
                     code.write(responseARCHIVE.content)
+                # Extract archives
                 with tarfile.open(archive) as f:
                     f.extractall('.')
+                # Remove archives
                 os.remove(archive)
             else:
                 continue
