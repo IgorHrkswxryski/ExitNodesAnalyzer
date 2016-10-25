@@ -30,18 +30,18 @@ def sqliteImport():
         conn = sqlite3.connect('exitNodes.db')
         curs = conn.cursor()
     except:
-        print("Error Creating database")
+        print("Database already exists")
     # Create table
     try:
         print("Creating table nodes")
-        curs.execute('''CREATE TABLE nodes (ExitAddress text, UpTime date)''')
+        curs.execute("CREATE TABLE nodes (ExitAddress text, UpTime date)")
     except:
-        print("Error creating table")
+        print("Table already exists")
     # Recursively get files
     print("Importing data, take about 10 minutes")
     for root, subFolders, files in os.walk("."):
         for x in files:
-            if bool(re.search(r'\d', x)):
+            if bool(re.search(r"(\d+-\d+-\d+-\d+-\d+-\d+)", x)):
                 with open(os.path.join(root, x), 'r') as fin:
                     data = fin.readlines()
                     reader = csv.reader(data , delimiter=' ')
@@ -50,7 +50,7 @@ def sqliteImport():
                             ExitAddress = row[1]
                             UpTime = row[2]
                             try:
-                                curs.execute("insert into nodes (ExitAddress, UpTime) values (?, ?)",(ExitAddress, UpTime))
+                                curs.execute("INSERT INTO nodes (ExitAddress, UpTime) values (?, ?)",(ExitAddress, UpTime))
                             except:
                                 print("Error inserting")
     conn.commit()
@@ -127,5 +127,5 @@ if __name__ == '__main__':
         selectUpTime(args.IP)
 
     if args.setup == "setup":
-        downloadFiles()
+        #downloadFiles()
         sqliteImport()
